@@ -8,12 +8,17 @@ def main():
 
    #Oppg 4
    walker = ratchet_interaction_walker(cfg)
-   x, y = walker.interaction_simulator()
+   T, x_array = walker.interaction_simulator()
 
-   plt.plot(x, y)
-   for i in x:
-       if i % 40 == 0:
-           plt.axvline(i, color='black', linestyle='--')
+   for x in x_array:
+      plt.plot(T, x)
+   for i in range(len(x)):
+      if i % 40 == 0:
+         if i % 80 == 0:
+            color = 'green'
+         else:
+            color = 'black'
+         plt.axvline(i, color=color, linestyle='--')
    plt.show()
 
 
