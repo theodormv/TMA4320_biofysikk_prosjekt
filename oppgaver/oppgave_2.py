@@ -59,8 +59,8 @@ class random_walk():
 
 n_steps = 100
 
-walker_V1 = random_walk(1000, V_1)
-walker_V2 = random_walk(1000, V_2)
+walker_V1 = random_walk(beta_k_ratio=1000, V=V_1)
+walker_V2 = random_walk(beta_k_ratio=1000, V=V_2)
 
 for j in range(n_steps):
     walker_V1.oppg_a_step()
