@@ -1,5 +1,7 @@
+from oppgaver.oppgave_3 import oppgave_3_a
+
 def main():
-    return
+   oppgave_3_a()
 
 if __name__ == "__main__":
     main()
