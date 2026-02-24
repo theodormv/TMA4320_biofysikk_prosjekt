@@ -220,7 +220,7 @@ def oppgave_3_c(num_values = 50):
         _, streams[i] = random_walk_cycle_vectorized(positions, particles)
         i+=1
 
-    plt.plot(alpha_range, analytical_avg_current(alpha_range), label=r"Analytical $J_\text{avg}$")
+    plt.plot(alpha_range, analytical_avg_current_alpha(alpha_range), label=r"Analytical $J_\text{avg}$")
     plt.plot(alpha_range, streams, label=r"Simulated $J_\text{avg}$")
     plt.legend()
     plt.grid()
@@ -255,7 +255,7 @@ def oppgave_3_d(num_values = 50):
 
         
         plt.plot(alpha_range, streams, label=r"$\beta k = $" + str(kbeta[j]))
-    plt.plot(alpha_range, analytical_avg_current(alpha_range), label=r"Analytical $J_\text{avg}$")
+    plt.plot(alpha_range, analytical_avg_current_alpha(alpha_range), label=r"Analytical $J_\text{avg}$")
     plt.legend()
     plt.grid()
     plt.show()
