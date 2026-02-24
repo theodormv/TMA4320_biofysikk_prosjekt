@@ -1,7 +1,9 @@
-from oppgaver.oppgave_3 import oppgave_3_a
+
+import oppgaver.oppgave_3 as oppg3
+
 
 def main():
-   oppgave_3_a()
+   oppg3.oppgave_3_e(50)
 
 if __name__ == "__main__":
     main()
