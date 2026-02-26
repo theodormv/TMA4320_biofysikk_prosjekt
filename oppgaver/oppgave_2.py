@@ -59,36 +59,38 @@ class random_walk():
         self.oppg_b_vals.append(particles)
 
 
-n_steps = 100
 
-walker_V1 = random_walk(beta_k_ratio=1000, V=V_1)
-walker_V2 = random_walk(beta_k_ratio=1000, V=V_2)
+def oppg2():
+    n_steps = 100
 
-for j in range(n_steps):
-    walker_V1.oppg_a_step()
-    walker_V1.oppg_b_step()
-    walker_V2.oppg_a_step()
-    walker_V2.oppg_b_step()
-    if j % 10 == 0:
-        print(f'Iteration {j} of {n_steps}')
+    walker_V1 = random_walk(beta_k_ratio=1000, V=V_1)
+    walker_V2 = random_walk(beta_k_ratio=1000, V=V_2)
 
-
-for walker, potential_info in {walker_V1:('V1', 'k'), walker_V2: ('V2', '-kx')}.items():
-    potential_type, potential_eq = potential_info
+    for j in range(n_steps):
+        walker_V1.oppg_a_step()
+        walker_V1.oppg_b_step()
+        walker_V2.oppg_a_step()
+        walker_V2.oppg_b_step()
+        if j % 10 == 0:
+            print(f'Iteration {j} of {n_steps}')
 
 
-    verdier = np.array(walker.oppg_a_vals).flatten()
-    plt.hist(verdier, density=True, bins=walker.n_particles//3)
-    plt.title(f'Partikkelfordeling uten interaksjoner og $V(x) = {potential_eq}$')
-    plt.savefig(f'figures\\2a_{potential_type}_{walker.beta_k_ratio}ratio.jpg')
-
-    plt.clf()
-    
-
-    verdier = np.array(walker.oppg_b_vals).flatten()
-    plt.hist(verdier, density=True, bins=walker.n_particles//3)
-    plt.title(f'Partikkelfordeling med interaksjoner og $V(x) = {potential_eq}$')
-    plt.savefig(f'figures\\2b_{potential_type}_{walker.beta_k_ratio}ratio.jpg')
+    for walker, potential_info in {walker_V1:('V1', 'k'), walker_V2: ('V2', '-kx')}.items():
+        potential_type, potential_eq = potential_info
 
 
-    plt.clf()
+        verdier = np.array(walker.oppg_a_vals).flatten()
+        plt.hist(verdier, density=True, bins=walker.n_particles//3)
+        plt.title(f'Partikkelfordeling uten interaksjoner og $V(x) = {potential_eq}$')
+        plt.savefig(f'figures\\2a_{potential_type}_{walker.beta_k_ratio}ratio.jpg')
+
+        plt.clf()
+        
+
+        verdier = np.array(walker.oppg_b_vals).flatten()
+        plt.hist(verdier, density=True, bins=walker.n_particles//3)
+        plt.title(f'Partikkelfordeling med interaksjoner og $V(x) = {potential_eq}$')
+        plt.savefig(f'figures\\2b_{potential_type}_{walker.beta_k_ratio}ratio.jpg')
+
+
+        plt.clf()
