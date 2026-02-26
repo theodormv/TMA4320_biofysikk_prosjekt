@@ -3,10 +3,10 @@ import scipy as sp
 import matplotlib.pyplot as plt
 from utilities.probs import p_plus, p_minus
 
-def V_1(x, k):
+def V_1(x):
     return k
 
-def V_2(x, k):
+def V_2(x):
     return - k * x
 
 
@@ -19,6 +19,8 @@ class random_walk():
         T = 273.15 + 37
         self.beta = (T * k_b)**-1
         self.k = beta_k_ratio * (T * k_b)
+        global k
+        k = self.k
         self.beta_k_ratio = beta_k_ratio
         self.oppg_a_vals = list()
         self.oppg_b_vals = list()
@@ -26,8 +28,8 @@ class random_walk():
     def gen_walk_masks(self, particles):
         uniform_dist = np.random.uniform(0, 1, self.n_particles)
         x_0 = particles
-        go_left = uniform_dist <= p_minus(x_0, self.beta, self.k, self.V)
-        go_right = uniform_dist >= 1-p_plus(x_0, self.beta, self.k, self.V)
+        go_left = uniform_dist <= p_minus(x_0, self.beta, self.V)
+        go_right = uniform_dist >= 1-p_plus(x_0, self.beta, self.V)
         return go_left, go_right
 
     def oppg_a_step(self):

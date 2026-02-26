@@ -139,6 +139,7 @@ class ratchet_interaction_walker():
 
 
         particle_movements = np.array(particle_movements).T
+        self.cycle_averaged_particle_currents = np.average(self.cycle_averaged_particle_currents)
         return (np.arange(self.N_cycles * self.T_p * 2), particle_movements)
     
 
@@ -182,19 +183,17 @@ def rho_iterator(T_p = 'default'):
         print(f'Current iteration - rho: {rho}')
         walker = ratchet_interaction_walker(cfg)
         walker.interaction_simulator()
-        plot_values.append((rho, walker.cycle_averaged_particle_currents))
+        plot_values.append([rho, walker.cycle_averaged_particle_currents])
 
-
-    cycles = np.arange(walker.N_cycles)
-    return cycles, plot_values
+    return plot_values
 
 def oppg4b():
-    cycles, plot_values = rho_iterator()
-    for (rho, current) in plot_values:
-        plt.plot(cycles, current, label=f'$\\rho = {rho}$')
+    plot_values = rho_iterator()
+    rho, avg_current = np.array(plot_values).T
+    plt.plot(rho, avg_current)
 
     plt.title('Syklus-snittet partikkelstrømning med varierende partikkeltetthet')
-    plt.xlabel('Syklus')
+    plt.xlabel('$\\rho$')
     plt.ylabel('Normalisert partikkelstrøm')
     plt.legend()
     plt.show()
