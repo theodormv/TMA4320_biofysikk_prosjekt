@@ -22,4 +22,4 @@ oppg-4b:
   N_p: 100
   b: 20 # Partikkelstørrelse
   rho_min: 0.01
-  rho_max: 0.05
+  rho_max: 1
