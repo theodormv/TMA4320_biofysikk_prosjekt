@@ -282,7 +282,7 @@ def oppgave_3_e(num_values = 20):
     streams = np.zeros(num_values)
 
     global T_p
-    Tp_range = np.linspace(800, 1500, num_values, dtype=np.int16)
+    Tp_range = np.linspace(80, 1500, num_values, dtype=np.int16)
     for i, T in enumerate(tqdm(Tp_range)):
         T_p = T
         particles = np.copy(particles_start)
