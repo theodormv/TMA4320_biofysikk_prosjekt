@@ -92,7 +92,7 @@ def random_walk_system(positions, occupied, potential):
 def random_walk_system_vectorized(particles, positions, potential):
 
     movements = np.random.uniform(size=N_particles)
-    particle_probs = np.array((p_minus(positions[particles], beta, k, potential), p_plus(positions[particles], beta, k, potential)))
+    particle_probs = np.array((p_minus(positions[particles], beta, potential), p_plus(positions[particles], beta, potential)))
 
     move_left = np.less_equal(movements, particle_probs[0])*1
     move_right = np.greater_equal(movements, 1 - particle_probs[1])*1
@@ -116,6 +116,9 @@ def random_walk_system_vectorized(particles, positions, potential):
 def random_walk_cycle(positions,occupied):
     avg_stream = 0
     for timestep in range(2*T_p):
+        if (timestep == 0 or timestep == T_p):
+            plt.hist(positions, occupied)
+
         potential = V_2 #antar V1 med mindre vi er i en oddetalls del av syklusen
         if (timestep >= T_p):
             potential = V_1
@@ -130,10 +133,13 @@ def random_walk_cycle_vectorized(positions,particles):
     avg_stream = 0
     
     for timestep in range(2*T_p):
+        
         #antar V1 med mindre vi er i en oddetalls del av syklusen
         V = V_2
         if timestep > T_p:
             V = V_1_vectorized
+
+        
 
         particles, stream = random_walk_system_vectorized(particles, positions, V)
         avg_stream += stream
@@ -143,12 +149,28 @@ def random_walk_cycle_vectorized(positions,particles):
     return particles, avg_stream
 
 def oppgave_3_a(num_cycles = 10):
-    positions = np.linspace(0, h*(N_points-1), N_points)
-    occupied = np.ones((N_points),dtype=np.int16)*N_particles/N_points
+    global N_x
+    N_x = 100
+    
+    global N_particles
+    N_particles = 12*N_x
+
+    global alpha
+    alpha = 0.8
+
+    global T_p
+    T_p = 500
+
+    particles = np.ones(N_particles, dtype=np.int16)*int(N_particles/N_points)
+    positions = np.linspace(0, h*N_points-1, N_points)
     streams = np.zeros(num_cycles)
-    for i in range(num_cycles):
-        occupied, streams[i] = random_walk_cycle(positions, occupied)
-        print(f"cycle: {i+1}, average stream {streams[i]}")
+
+    for cycle in range(num_cycles):
+        particles, streams[cycle] = random_walk_cycle_vectorized(positions, particles)
+        plt.hist(particles, bins = 20)
+        print(f"cycle: {cycle}, average stream {streams[cycle]}")
+        plt.show()
+   
 
 def oppgave_3_b(num_values = 50):
     global N_particles
