@@ -1,7 +1,6 @@
 import scipy as sp
 import numpy as np
 import matplotlib.pyplot as plt
-import yaml
 
 from utilities.probs import p_minus, p_plus
 np.seterr(over='ignore')
@@ -53,7 +52,6 @@ class ratchet_interaction_walker():
         go_right = uniform_dist >= 1-p_plus(x_0, self.beta, V)
         return go_left, go_right
 
-    
     def interaction_simulator(self):
         '''Simulerer "Random walk in a ratchet potential with interactions". Returnerer alle tidssteg samt alle x-posisjoner til tilfeldig utvalgte partikler'''
         self.vline_plot_points = list() # Brukes i plotting senere for å indikere potensialbytte
@@ -143,34 +141,9 @@ class ratchet_interaction_walker():
         return (np.arange(self.N_cycles * self.T_p * 2), particle_movements)
     
 
-cfg = {"oppg-4a":{
-  "alpha": 0.2,
-  "T": 310.15,
-  "N_x": 20,
-  "T_p": 40,
-  "N_cycles": 5,
-  "N_s": 4,
-  "h": 1,
-  "beta_k_ratio": 1000,
-  "N_p": 2,
-  "b": 2}, # Partikkelstørrelse
 
-"oppg-4b":{
-  "alpha": 0.2,
-  "T": 310.15,
-  "N_x": 100,
-  "T_p": 300,
-  "N_cycles": 100,
-  "N_s": 10,
-  "h": 1,
-  "beta_k_ratio": 1000,
-  "N_p": 100,
-  "b": 20, # Partikkelstørrelse
-  "rho_min": 0.01,
-  "rho_max": 1}}
 
-def oppg4a():
-    cfg = cfg
+def oppg4a(cfg : dict):
 
     walker = ratchet_interaction_walker(cfg)
     T, x_array = walker.interaction_simulator()
@@ -188,10 +161,9 @@ def oppg4a():
     plt.legend()
     plt.show()
 
-def rho_iterator(T_p = 'default'):
+def rho_iterator(cfg: dict, T_p = 'default'):
     '''Finner alle cycle-averaged particle currents for oppgitt intervall av rho. Returnerer:
     cycles og liste som inneholder tuppler av (rho-verdien, liste over alle cycle-averaged particle currents for rho-verdien)'''
-    cfg = cfg
 
     plot_values = list()
 
@@ -211,8 +183,8 @@ def rho_iterator(T_p = 'default'):
 
     return plot_values
 
-def oppg4b():
-    plot_values = rho_iterator()
+def oppg4b(cfg : dict):
+    plot_values = rho_iterator(cfg)
     rho, avg_current = np.array(plot_values).T
     plt.plot(rho, avg_current)
 
@@ -223,7 +195,7 @@ def oppg4b():
     plt.show()
 
 
-def oppg4c():
+def oppg4c(cfg : dict):
     T_p_vals = np.array([10, 100, 450, 1000, 10000])
     for T_p in T_p_vals:
-        cycles, plot_vals = rho_iterator(T_p)
+        cycles, plot_vals = rho_iterator(cfg, T_p)
