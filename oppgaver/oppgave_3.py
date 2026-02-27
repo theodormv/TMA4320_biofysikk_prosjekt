@@ -161,7 +161,11 @@ def oppgave_3_a(num_cycles = 10):
     global T_p
     T_p = 500
 
-    particles = np.ones(N_particles, dtype=np.int16)*int(N_particles/N_points)
+    #initialliserer partikellene jevnt utover 
+    particles = np.array((np.arange(0, N_points, 1, dtype=np.int16),))
+    one = np.ones((int(N_particles/N_points),1), dtype = np.int16)
+    particles = np.ndarray.flatten(one @ particles)
+
     positions = np.linspace(0, h*N_points-1, N_points)
     streams = np.zeros(num_cycles)
 
