@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from utilities.probs import p_minus, p_plus
 
 
+import matplotlib.animation as animation
+import functools
+
 
 alpha = 0.8
 T = 273.15 + 37
@@ -90,7 +93,7 @@ def random_walk_system(positions, occupied, potential):
     return new_occupied, stream
 
 def random_walk_system_vectorized(particles, positions, potential):
-
+    p = np.copy(particles)
     movements = np.random.uniform(size=N_particles)
     particle_probs = np.array((p_minus(positions[particles], beta, potential), p_plus(positions[particles], beta, potential)))
 
@@ -100,14 +103,14 @@ def random_walk_system_vectorized(particles, positions, potential):
     n_minus = np.sum(move_left)
 
     particles += move_right - move_left
-
     
+    #if(np.linalg.norm(np.equal(particles, N_points))):
+
+        #print(np.linalg.norm(np.equal(particles, N_points)))
+
     particles -= np.equal(particles, N_points)*N_points
     particles += np.equal(particles, -1)*N_points
 
-    for i in range(len(particles)):
-        if(particles[i] == 200 or particles[i]==-1):
-            print(f"index: {i} == {particles[i]}")
 
     return particles, (n_plus-n_minus) / N_particles
     
@@ -129,7 +132,7 @@ def random_walk_cycle(positions,occupied):
 
     return occupied, avg_stream
 
-def random_walk_cycle_vectorized(positions,particles):
+def random_walk_cycle_vectorized(positions,particles, particle_archive):
     avg_stream = 0
     
     for timestep in range(2*T_p):
@@ -139,9 +142,11 @@ def random_walk_cycle_vectorized(positions,particles):
         if timestep > T_p:
             V = V_1_vectorized
 
-        
-
         particles, stream = random_walk_system_vectorized(particles, positions, V)
+
+        if (timestep % int(T_p/25) == 0):
+            particle_archive.append(np.copy(particles))
+
         avg_stream += stream
 
     avg_stream /= 2*T_p
@@ -161,16 +166,48 @@ def oppgave_3_a(num_cycles = 10):
     global T_p
     T_p = 500
 
-    particles = np.ones(N_particles, dtype=np.int16)*int(N_particles/N_points)
+    #initialliserer partikellene jevnt utover 
+    particles = np.array((np.arange(0, N_points, 1, dtype=np.int16),))
+    one = np.ones((int(N_particles/N_points),1), dtype = np.int16)
+    particles = np.ndarray.flatten(one @ particles)
+
+
     positions = np.linspace(0, h*N_points-1, N_points)
     streams = np.zeros(num_cycles)
 
+    #set up kode for animasjon
+    HIST_BINS = np.linspace(0, N_points*h - 1, N_points)
+
+    particle_archive = [particles]
+    
+
+    # hoved syklus
     for cycle in range(num_cycles):
-        particles, streams[cycle] = random_walk_cycle_vectorized(positions, particles)
-        plt.hist(particles, bins = 20)
+        particles, streams[cycle] = random_walk_cycle_vectorized(positions, particles, particle_archive)
         print(f"cycle: {cycle}, average stream {streams[cycle]}")
-        plt.show()
-   
+    
+    """Primary animation code"""
+
+    print(len(particle_archive))
+
+    def animate(frame_number, bar_container):
+        # Simulate new data coming in.
+        n, _ = np.histogram(particle_archive[frame_number], HIST_BINS)
+        for count, rect in zip(n, bar_container.patches):
+            rect.set_height(count)
+
+        return bar_container.patches
+    
+
+    fig, ax = plt.subplots()
+    _, _, bar_container = ax.hist(particle_archive[0], HIST_BINS, lw=1,
+                                ec="yellow", fc="green", alpha=0.5)
+
+
+    anim = functools.partial(animate, bar_container=bar_container)
+    ani = animation.FuncAnimation(fig, anim, 400, repeat=False, blit=True)
+    plt.show()
+
 
 def oppgave_3_b(num_values = 50):
     global N_particles
@@ -209,7 +246,6 @@ def analytical_avg_current_alpha(a):
     erfc_right = sp.special.erfc((1-a)*multiplier)
 
     return N_x/(4*T_p) * (erfc_left - erfc_right)
-
 
 
 def analytical_avg_current_T_p(Tp):
