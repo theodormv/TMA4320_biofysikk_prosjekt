@@ -2,6 +2,7 @@ import scipy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 from numba import njit
+from tqdm import tqdm
 
 from utilities.probs_fast import p_minus, p_plus
 np.seterr(over='ignore')
@@ -66,15 +67,15 @@ def random_walk_ratchet_potential(particles, N_timesteps, T_p, N_particles, N_po
         go_left, go_right = gen_walk_masks(particles, N_particles, beta, V_xm1, V_xp1, V_x0)
         movement_order = np.random.permutation(np.arange(N_particles))
         for curr_particle_idx in movement_order:
-            distance_from_particle = np.copy(particles) - particles[curr_particle_idx]
+            distance_from_particle = particles - particles[curr_particle_idx]
             if go_left[curr_particle_idx]:
-                if np.any((distance_from_particle > -b) & (distance_from_particle < 0)):
+                if np.any((distance_from_particle >= -b) & (distance_from_particle < 0)):
                     continue
                 else:
                     #Denne if-statementen sjekker om periodisk randbetingelse er brutt
-                    if curr_particle_idx <= b:
-                        boundary = N_points - 1 - (b - curr_particle_idx) # -1 pga 0-indeksering
-                        if np.any(distance_from_particle >= boundary):
+                    if particles[curr_particle_idx] <= b:
+                        boundary = (N_points - 1) - (b - particles[curr_particle_idx] - 1) # N_points - 1 pga 0-indeksering
+                        if np.any(particles >= boundary):
                             continue
                 
                 #Denne koden kjører kun dersom ingen if-statements ovenfor er gyldig
@@ -82,11 +83,11 @@ def random_walk_ratchet_potential(particles, N_timesteps, T_p, N_particles, N_po
                 n_minus += 1
 
             elif go_right[curr_particle_idx]:
-                if np.any((distance_from_particle < b) & (distance_from_particle > 0)):
+                if np.any((distance_from_particle <= b) & (distance_from_particle > 0)):
                     continue
-                if curr_particle_idx >= N_points - 1 - b:
-                    boundary = b - (N_points - 1 - curr_particle_idx)
-                    if np.any(np.abs(distance_from_particle) >= N_points - 1 - boundary):
+                if particles[curr_particle_idx] >= N_points - 1 - b:
+                    boundary = (particles[curr_particle_idx] + 1 + b) - (N_points - 1) 
+                    if np.any(particles <= boundary):
                         continue
 
                 particles[curr_particle_idx] += 1
@@ -162,25 +163,43 @@ class ratchet_interaction_walker():
     
 
 
+def plot_particle_movement(walker : ratchet_interaction_walker, cfg : dict, x_array : np.array, T : np.array, plot_potential_switches = True):
+    for x in x_array:
+        x_float = x.astype(np.float64)
+        diffs = np.abs(np.diff(x_float)) 
+        jump_indices = np.where(diffs >= (cfg['N_x']*cfg['N_s'] - 10))[0]
+
+        for idx in jump_indices:
+            if idx + 1 < len(x_float):
+                x_float[idx + 1] = np.nan
+        plt.plot(T, x_float)
+                
+    if plot_potential_switches:
+        for t, potential_idx in walker.vline_plot_points:
+            if potential_idx % 2 == 0:
+                color = 'green'
+                label = '$V_1$' if t == walker.vline_plot_points[0][0] else ''
+            else:
+                color = 'black'
+                label = '$V_2$' if t == walker.vline_plot_points[1][0] else ''
+            plt.axvline(t, color=color, linestyle='--', label = label)
+    else:
+        plt.grid()
+    plt.legend()
+    plt.title('Partikkelbevegelse over tid i aksjonspotensiale med frastøtning')
+    plt.xlabel('Tidssteg')
+    plt.ylabel('Plassering')
+    plt.savefig('figures\\oppg4a.png')
+    plt.show()
+
 
 def oppg4a(cfg : dict):
 
     cfg = cfg['oppg-4a']
     walker = ratchet_interaction_walker(cfg)
     T, x_array = walker.interaction_simulator()
+    plot_particle_movement(walker, cfg, x_array, T, True)
 
-    for x in x_array:
-        plt.plot(T, x)
-    for t, potential_idx in walker.vline_plot_points:
-        if potential_idx % 2 == 0:
-            color = 'green'
-            label = '$V_1$' if t == walker.vline_plot_points[0][0] else ''
-        else:
-            color = 'black'
-            label = '$V_2$' if t == walker.vline_plot_points[1][0] else ''
-        plt.axvline(t, color=color, linestyle='--', label = label)
-    plt.legend()
-    plt.show()
 
 def rho_iterator(cfg: dict, T_p = 'default'):
     '''Finner alle cycle-averaged particle currents for oppgitt intervall av rho. Returnerer:
@@ -190,14 +209,14 @@ def rho_iterator(cfg: dict, T_p = 'default'):
 
     if not isinstance(T_p, str):
         cfg['T_p'] = int(T_p)
-        cfg['N_c'] = 3E4 // T_p
+        cfg['N_cycles'] = int(3E4 / T_p)
 
     #Finner tilsvarende antall partikler til partikkeltettheter oppgitt i oppgaven
     N_p_min, N_p_max = np.ceil(np.array([cfg['rho_min'],cfg['rho_max']]) * cfg['N_s'] * cfg['N_x'] / cfg['b']).astype(int)
-    for N_p in np.arange(N_p_min, N_p_max + 1):
+    N_p_vals = np.arange(N_p_min, N_p_max + 1)
+    for N_p in tqdm(N_p_vals):
         cfg['N_p'] = N_p
         rho = N_p * cfg['b'] / (cfg['N_x'] * cfg['N_s'])
-        print(f'Current iteration - rho: {rho}')
         walker = ratchet_interaction_walker(cfg)
         walker.interaction_simulator()
         plot_values.append([rho, walker.cycle_averaged_particle_currents])
@@ -213,11 +232,20 @@ def oppg4b(cfg : dict):
     plt.title('Syklus-snittet partikkelstrømning med varierende partikkeltetthet')
     plt.xlabel('$\\rho$')
     plt.ylabel('Normalisert partikkelstrøm')
-    plt.legend()
-    plt.show()
+    plt.savefig('figures\\oppg4b.png')
 
 
 def oppg4c(cfg : dict):
-    T_p_vals = np.array([10, 100, 450, 1000, 10000])
+    cfg = cfg['oppg-4b']
+    T_p_vals = np.array([100, 450, 1000, 10000])
     for T_p in T_p_vals:
-        cycles, plot_vals = rho_iterator(cfg, T_p)
+        print(f'---------------- T_P = {T_p} ----------------')
+        plot_vals = rho_iterator(cfg, T_p)
+        rho, avg_current = np.array(plot_vals).T
+        plt.plot(rho, avg_current, label=f'$T_p = {T_p}$')
+
+    plt.title('Syklus-snittet partikkelstrømning med varierende partikkeltetthet')
+    plt.xlabel('$\\rho$')
+    plt.ylabel('Normalisert partikkelstrøm')
+    plt.legend()
+    plt.savefig('figures\\oppg4c.jpg')

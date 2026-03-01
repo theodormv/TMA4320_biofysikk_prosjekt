@@ -1,5 +1,5 @@
 from oppgaver.oppgave_3 import oppgave_3_a
-from oppgaver.oppgave_4_fast import oppg4a, oppg4b
+from oppgaver.oppgave_4_fast import oppg4a, oppg4b, oppg4c
 from oppgaver.oppgave_2 import oppg2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,7 +13,7 @@ cfg = {"oppg-4a":{
   "N_s": 4,
   "h": 1,
   "beta_k_ratio": 1000,
-  "N_p": 2,
+  "N_p": 5,
   "b": 2}, # Partikkelstørrelse
 
 "oppg-4b":{
@@ -25,13 +25,14 @@ cfg = {"oppg-4a":{
   "N_s": 10,
   "h": 1,
   "beta_k_ratio": 1000,
-  "N_p": 100,
+  "N_p": 34,
   "b": 20, # Partikkelstørrelse
   "rho_min": 0.01,
-  "rho_max": 1}}
+  "rho_max": 1,
+  "N_rho": 200}}
 
 def main():
-   oppg4b(cfg)
+   oppg4a(cfg)
 
 if __name__ == "__main__":
    main()
