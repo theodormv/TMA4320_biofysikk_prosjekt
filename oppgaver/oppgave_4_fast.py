@@ -113,8 +113,10 @@ def random_walk_ratchet_potential(particles, N_timesteps, T_p, N_particles, N_po
 
 
 class ratchet_interaction_walker():
-    def __init__(self, cfg : dict):
-        self.cfg = cfg
+    def __init__(self, cfg : dict, oppg : str):
+        self.oppg = oppg
+        self.cfg = cfg[f'oppg-{self.oppg}']
+        cfg = self.cfg
         k_b = sp.constants.Boltzmann
         self.potentials = [V_1, V_2]
         self.T = cfg['T']
@@ -138,6 +140,11 @@ class ratchet_interaction_walker():
         alpha = self.alpha
         N_x = self.N_x
   
+    def plot_sawtooth_potential(self):
+            x = np.linspace(0,1000, num=10000)
+            V_vals = V_1(x)
+            plt.plot(x, V_vals)
+            plt.show()
 
     def interaction_simulator(self):
         '''Simulerer "Random walk in a ratchet potential with interactions". Returnerer alle tidssteg samt alle x-posisjoner til tilfeldig utvalgte partikler'''
@@ -145,7 +152,7 @@ class ratchet_interaction_walker():
         if self.N_particles == 1:
             particles = np.array([self.N_points // 2])
         else:
-            particles = np.arange(0, self.N_points, self.N_points/self.N_particles, dtype=np.float64)
+            particles = np.linspace(0, self.N_points -1, self.N_particles, dtype=np.int64)
 
         self.potential_switch_count, self.cycle_averaged_particle_currents, particle_movements, self.vline_plot_points = random_walk_ratchet_potential(
             particles,
@@ -163,7 +170,9 @@ class ratchet_interaction_walker():
     
 
 
-def plot_particle_movement(walker : ratchet_interaction_walker, cfg : dict, x_array : np.array, T : np.array, plot_potential_switches = True):
+def plot_particle_movement(walker : ratchet_interaction_walker, cfg : dict, x_array : np.array, T : np.array, oppg : str, plot_potential_switches = True):
+    plt.figure(2)
+    cfg = cfg[f'oppg-{oppg}']
     for x in x_array:
         x_float = x.astype(np.float64)
         diffs = np.abs(np.diff(x_float)) 
@@ -189,23 +198,18 @@ def plot_particle_movement(walker : ratchet_interaction_walker, cfg : dict, x_ar
     plt.title('Partikkelbevegelse over tid i aksjonspotensiale med frastøtning')
     plt.xlabel('Tidssteg')
     plt.ylabel('Plassering')
-    plt.savefig('figures\\oppg4a.png')
+    #plt.savefig(f'figures\\oppg{oppg}.png')
     plt.show()
 
-
-def oppg4a(cfg : dict):
-
-    cfg = cfg['oppg-4a']
-    walker = ratchet_interaction_walker(cfg)
-    T, x_array = walker.interaction_simulator()
-    plot_particle_movement(walker, cfg, x_array, T, True)
-
-
-def rho_iterator(cfg: dict, T_p = 'default'):
+def rho_iterator(cfg: dict, oppg: str, T_p = 'default'):
     '''Finner alle cycle-averaged particle currents for oppgitt intervall av rho. Returnerer:
     cycles og liste som inneholder tuppler av (rho-verdien, liste over alle cycle-averaged particle currents for rho-verdien)'''
 
-    plot_values = list()
+    rho_current_values = list()
+    x_t_values = list()
+    main_cfg = cfg
+    cfg = cfg[f'oppg-{oppg}']
+
 
     if not isinstance(T_p, str):
         cfg['T_p'] = int(T_p)
@@ -217,35 +221,50 @@ def rho_iterator(cfg: dict, T_p = 'default'):
     for N_p in tqdm(N_p_vals):
         cfg['N_p'] = N_p
         rho = N_p * cfg['b'] / (cfg['N_x'] * cfg['N_s'])
-        walker = ratchet_interaction_walker(cfg)
-        walker.interaction_simulator()
-        plot_values.append([rho, walker.cycle_averaged_particle_currents])
+        walker = ratchet_interaction_walker(main_cfg, '4b')
+        T, x_array = walker.interaction_simulator()
+        x_t_values.append([T, x_array])
+        rho_current_values.append([rho, walker.cycle_averaged_particle_currents])
+        
 
-    return plot_values
+    rho_current_values = np.array(rho_current_values).T
+    return walker, rho_current_values, x_t_values
+
+def oppg4a(cfg : dict):
+
+    walker = ratchet_interaction_walker(cfg, '4a')
+    T, x_array = walker.interaction_simulator()
+    plot_particle_movement(walker, cfg, x_array, T, '4a')
+    #plt.savefig('figurer\\oppg4a.png')
+
 
 def oppg4b(cfg : dict):
-    cfg = cfg['oppg-4b']
-    plot_values = rho_iterator(cfg)
-    rho, avg_current = np.array(plot_values).T
+    plot_values = rho_iterator(cfg, '4b')
+    walker, rho_current_values, x_t_values = plot_values
+    rho, avg_current = rho_current_values
+    T, x_array = x_t_values[5]
+    print(x_array[:, 0])
+    plt.figure(1)
     plt.plot(rho, avg_current)
 
     plt.title('Syklus-snittet partikkelstrømning med varierende partikkeltetthet')
     plt.xlabel('$\\rho$')
     plt.ylabel('Normalisert partikkelstrøm')
     plt.savefig('figures\\oppg4b.png')
+    #plot_particle_movement(walker, cfg, x_array, T, '4b', False)
 
 
 def oppg4c(cfg : dict):
-    cfg = cfg['oppg-4b']
-    T_p_vals = np.array([100, 450, 1000, 10000])
+    T_p_vals = np.array([100, 300, 600, 1000])
     for T_p in T_p_vals:
         print(f'---------------- T_P = {T_p} ----------------')
-        plot_vals = rho_iterator(cfg, T_p)
-        rho, avg_current = np.array(plot_vals).T
-        plt.plot(rho, avg_current, label=f'$T_p = {T_p}$')
+        plot_vals = rho_iterator(cfg, '4b', T_p)
+        walker, rho_current_values, x_t_values = plot_vals
+        rho, avg_current = rho_current_values
+        plt.plot(rho, np.log10(avg_current), label=f'$T_p = {T_p}$')
 
     plt.title('Syklus-snittet partikkelstrømning med varierende partikkeltetthet')
     plt.xlabel('$\\rho$')
     plt.ylabel('Normalisert partikkelstrøm')
     plt.legend()
-    plt.savefig('figures\\oppg4c.jpg')
+    plt.savefig('figures\\oppg4c-mindreekstremeTp.png')

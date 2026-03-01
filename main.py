@@ -1,5 +1,5 @@
-from oppgaver.oppgave_3 import oppgave_3_a
-from oppgaver.oppgave_4_fast import oppg4a, oppg4b, oppg4c
+from oppgaver.oppgave_3 import oppgave_3_a, oppgave_3_b
+from oppgaver.oppgave_4_fast import oppg4a, oppg4b, oppg4c, V_1, ratchet_interaction_walker
 from oppgaver.oppgave_2 import oppg2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,11 +28,12 @@ cfg = {"oppg-4a":{
   "N_p": 34,
   "b": 20, # Partikkelstørrelse
   "rho_min": 0.01,
-  "rho_max": 1,
-  "N_rho": 200}}
+  "rho_max": 1}}
+
 
 def main():
-   oppg4a(cfg)
+   oppg4c(cfg)
+   #oppgave_3_a()
 
 if __name__ == "__main__":
    main()
