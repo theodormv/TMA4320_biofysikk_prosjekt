@@ -1,5 +1,5 @@
-from oppgaver.oppgave_3 import oppgave_3_a
-from oppgaver.oppgave_4_fast import oppg4a, oppg4b
+from oppgaver.oppgave_3 import oppgave_3_a, oppgave_3_b
+from oppgaver.oppgave_4_fast import oppg4a, oppg4b, oppg4c, V_1, ratchet_interaction_walker
 from oppgaver.oppgave_2 import oppg2
 import matplotlib.pyplot as plt
 import numpy as np
@@ -32,6 +32,7 @@ cfg = {"oppg-4a":{
 
 def main():
    oppg4b(cfg)
+
 
 if __name__ == "__main__":
    main()
