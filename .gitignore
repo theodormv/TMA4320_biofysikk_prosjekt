@@ -3,3 +3,4 @@
 *.jpg
 oppgaver/__pycache__/
 *.pyc
+main.py
