@@ -1,4 +1,4 @@
-from oppgaver.oppgave_3 import oppgave_3_a
+import oppgaver.oppgave_3 as oppg3
 from oppgaver.oppgave_4_fast import oppg4a, oppg4b
 from oppgaver.oppgave_2 import oppg2
 import matplotlib.pyplot as plt
