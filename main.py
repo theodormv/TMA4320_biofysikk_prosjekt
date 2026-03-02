@@ -31,7 +31,7 @@ cfg = {"oppg-4a":{
   "rho_max": 1}}
 
 def main():
-   oppg4b(cfg)
+   oppg3.oppgave_3_d()
 
 if __name__ == "__main__":
    main()

@@ -292,6 +292,9 @@ def oppgave_3_d(num_values = 50):
         
         plt.plot(alpha_range, streams, label=r"$\beta k = $" + str(kbeta[j]))
     plt.plot(alpha_range, analytical_avg_current_alpha(alpha_range), label=r"Analytical $J_\text{avg}$")
+    plt.xlabel(r"$\alpha$")
+    plt.ylabel(r"$J_\text{avg}$")
+    plt.title("sammenlikning av analytisk og simulert strømning for forskjellige forhold ")
     plt.legend()
     plt.grid()
     plt.show()
