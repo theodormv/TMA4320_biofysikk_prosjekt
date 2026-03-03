@@ -187,21 +187,28 @@ def oppgave_3_b(num_values = 50):
     particles_start[::2] = h*N_x
     positions = np.linspace(0, h*N_points, N_points)
     streams = np.zeros(num_values)
-    i = 0
+    
 
     global T_p
     Tp_range = np.linspace(1, 1001, num_values, dtype=np.int16)
-    for T in tqdm(Tp_range):
-        T_p = T
-        particles = np.copy(particles_start)
-        _, streams[i] = random_walk_cycle_vectorized(positions, particles)
-        i+=1
-
+    for _ in range(20):
+        i = 0
+        for T in tqdm(Tp_range):
+            T_p = T
+            particles = np.copy(particles_start)
+            _, s = random_walk_cycle_vectorized(positions, particles)
+            streams[i] += s
+            i+=1
+        
+    streams /= 20
 
 
     plt.plot(Tp_range, streams)
     #plt.plot(positions, V_1_vectorized(positions))
     plt.grid()
+    plt.title(f"gjennomsnittslig simulert strømnig mned variert $T_p$")
+    plt.xlabel(f"$T_p$")
+    plt.ylabel(r"$J_\text{avg}$")
     plt.show()
 
 
@@ -249,6 +256,9 @@ def oppgave_3_c(num_values = 50):
     plt.plot(alpha_range, analytical_avg_current_alpha(alpha_range), label=r"Analytical $J_\text{avg}$")
     plt.plot(alpha_range, streams, label=r"Simulated $J_\text{avg}$")
     plt.legend()
+    plt.xlabel(r"$\alpha$")
+    plt.ylabel(r"$J_\text{avg}$")
+    plt.title("analytisk og simulert snitt strømning")
     plt.grid()
     plt.show()
     
@@ -282,6 +292,9 @@ def oppgave_3_d(num_values = 50):
         
         plt.plot(alpha_range, streams, label=r"$\beta k = $" + str(kbeta[j]))
     plt.plot(alpha_range, analytical_avg_current_alpha(alpha_range), label=r"Analytical $J_\text{avg}$")
+    plt.xlabel(r"$\alpha$")
+    plt.ylabel(r"$J_\text{avg}$")
+    plt.title("sammenlikning av analytisk og simulert strømning for forskjellige forhold ")
     plt.legend()
     plt.grid()
     plt.show()
@@ -320,4 +333,5 @@ def oppgave_3_e(num_values = 20):
     plt.plot(Tp_range, analytical_avg_current_T_p(Tp_range), label=r"analytical $J_\text{avg}$")
     plt.legend()
     plt.grid()
+
     plt.show()

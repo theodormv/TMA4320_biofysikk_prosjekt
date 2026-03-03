@@ -2,7 +2,6 @@ import scipy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 from numba import njit
-from tqdm import tqdm
 
 from utilities.probs_fast import p_minus, p_plus
 np.seterr(over='ignore')
@@ -69,15 +68,15 @@ def random_walk_ratchet_potential(particles, N_timesteps, T_p, N_particles, N_po
         go_left, go_right = gen_walk_masks(particles, N_particles, beta, V_xm1, V_xp1, V_x0)
         movement_order = np.random.permutation(np.arange(N_particles))
         for curr_particle_idx in movement_order:
-            distance_from_particle = particles - particles[curr_particle_idx]
+            distance_from_particle = np.copy(particles) - particles[curr_particle_idx]
             if go_left[curr_particle_idx]:
-                if np.any((distance_from_particle >= -b) & (distance_from_particle < 0)):
+                if np.any((distance_from_particle > -b) & (distance_from_particle < 0)):
                     continue
                 else:
                     #Denne if-statementen sjekker om periodisk randbetingelse er brutt
-                    if particles[curr_particle_idx] <= b:
-                        boundary = (N_points - 1) - (b - particles[curr_particle_idx] - 1) # N_points - 1 pga 0-indeksering
-                        if np.any(particles >= boundary):
+                    if curr_particle_idx <= b:
+                        boundary = N_points - 1 - (b - curr_particle_idx) # -1 pga 0-indeksering
+                        if np.any(distance_from_particle >= boundary):
                             continue
                 
                 #Denne koden kjører kun dersom ingen if-statements ovenfor er gyldig
@@ -85,11 +84,11 @@ def random_walk_ratchet_potential(particles, N_timesteps, T_p, N_particles, N_po
                 n_minus += 1
 
             elif go_right[curr_particle_idx]:
-                if np.any((distance_from_particle <= b) & (distance_from_particle > 0)):
+                if np.any((distance_from_particle < b) & (distance_from_particle > 0)):
                     continue
-                if particles[curr_particle_idx] >= N_points - 1 - b:
-                    boundary = (particles[curr_particle_idx] + 1 + b) - (N_points - 1) 
-                    if np.any(particles <= boundary):
+                if curr_particle_idx >= N_points - 1 - b:
+                    boundary = b - (N_points - 1 - curr_particle_idx)
+                    if np.any(np.abs(distance_from_particle) >= N_points - 1 - boundary):
                         continue
 
                 particles[curr_particle_idx] += 1
@@ -215,12 +214,11 @@ def rho_iterator(cfg: dict, oppg: str, T_p = 'default'):
 
     if not isinstance(T_p, str):
         cfg['T_p'] = int(T_p)
-        cfg['N_cycles'] = int(3E4 / T_p)
+        cfg['N_c'] = 3E4 // T_p
 
     #Finner tilsvarende antall partikler til partikkeltettheter oppgitt i oppgaven
     N_p_min, N_p_max = np.ceil(np.array([cfg['rho_min'],cfg['rho_max']]) * cfg['N_s'] * cfg['N_x'] / cfg['b']).astype(int)
-    N_p_vals = np.arange(N_p_min, N_p_max + 1)
-    for N_p in tqdm(N_p_vals):
+    for N_p in np.arange(N_p_min, N_p_max + 1):
         cfg['N_p'] = N_p
         rho = N_p * cfg['b'] / (cfg['N_x'] * cfg['N_s'])
         walker = ratchet_interaction_walker(main_cfg, '4b')
