@@ -7,6 +7,7 @@ from tqdm import tqdm
 from utilities.probs_fast import p_minus, p_plus
 np.seterr(over='ignore')
 
+
 @njit
 def V_1(x : np.array):
     
@@ -36,6 +37,7 @@ def gen_walk_masks(x_0, N_particles, beta, V_xm1, V_xp1, V_x0):
 
 @njit
 def random_walk_ratchet_potential(particles, N_timesteps, T_p, N_particles, N_points, b, beta):
+    np.random.seed(120)
     #Lagrer alle partikkelstrømmer for en syklus slik at snittet kan utregnes
     particle_current_buffer = np.zeros(2*T_p)
     
@@ -261,10 +263,11 @@ def oppg4c(cfg : dict):
         plot_vals = rho_iterator(cfg, '4b', T_p)
         walker, rho_current_values, x_t_values = plot_vals
         rho, avg_current = rho_current_values
-        plt.plot(rho, np.log10(avg_current), label=f'$T_p = {T_p}$')
-
-    plt.title('Syklus-snittet partikkelstrømning med varierende partikkeltetthet')
-    plt.xlabel('$\\rho$')
-    plt.ylabel('Normalisert partikkelstrøm')
-    plt.legend()
-    plt.savefig('figures\\oppg4c-mindreekstremeTp.png')
+        plt.plot(rho, (avg_current), label=f'$T_p = {T_p}$')
+        plt.title('Syklus-snittet partikkelstrømning med varierende partikkeltetthet')
+        plt.xlabel('$\\rho$')
+        plt.ylabel('Normalisert partikkelstrøm')
+        plt.legend()
+        plt.savefig(f'figures/4c/Tp_{T_p}')
+        plt.clf()
+       # plt.savefig('figures\\oppg4c-mindreekstremeTp.png')
