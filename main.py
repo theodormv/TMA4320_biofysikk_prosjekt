@@ -1,10 +1,10 @@
 import oppgaver.oppgave_3 as oppg3
-from oppgaver.oppgave_4_fast import oppg4a, oppg4b
+from oppgaver.oppgave_4_fast import oppg4a, oppg4b, oppg4c, ratchet_interaction_walker
 from oppgaver.oppgave_2 import oppg2
 import matplotlib.pyplot as plt
 import numpy as np
 
-cfg = {"oppg-4a":{
+cfg = {"4a":{
   "alpha": 0.2,
   "T": 310.15,
   "N_x": 20,
@@ -13,10 +13,10 @@ cfg = {"oppg-4a":{
   "N_s": 4,
   "h": 1,
   "beta_k_ratio": 1000,
-  "N_p": 2,
+  "N_p": 5,
   "b": 2}, # Partikkelstørrelse
 
-"oppg-4b":{
+"4b":{
   "alpha": 0.2,
   "T": 310.15,
   "N_x": 100,
@@ -31,7 +31,7 @@ cfg = {"oppg-4a":{
   "rho_max": 1}}
 
 def main():
-   oppg4b(cfg)
-
+   oppg4c(cfg)
+  
 if __name__ == "__main__":
    main()
