@@ -2,7 +2,7 @@
 
 #### a)
 
-Netto strømmning blir større enn null ettersom vi ikke har ren diffusjon. Når potensialet er konstant er sannsynlighenene for bevegelse i positiv og negativ retning like. Dermed blir netto strømning null. Når sagtannpotensialet er aktivt derimot blir $p^+ {\not =} p^-$ for alle bindings punkter (utenom tilfellet der $\alpha = 0.5$). Og partikklene der vil tendere mot en retning. Hvilken retning en partikkel på et gitt bindingspunkt tenderer mot vil avhenge av $\alpha$.
+Netto strømmning blir større enn null ettersom vi ikke har ren diffusjon. Når potensialet er konstant er sannsynlighenene for bevegelse i positiv og negativ retning like. Dermed blir netto strømning null. Når sagtannpotensialet er aktivt derimot blir $p^+ {\not =} p^-$ for alle bindingspunkter (utenom tilfellet der $\alpha = 0.5$). Og partikklene der vil tendere mot en retning. Hvilken retning en partikkel på et gitt bindingspunkt tenderer mot vil avhenge av $\alpha$.
 
  Bare i tilfellet der sagtann potensialet er symmetrisk om toppunktet ($\alpha = 0.5$) vil det ikke være strømning ettersom det er symmetri i begge potensialene [skriv om]
 
@@ -23,4 +23,9 @@ Vi ser at for lave verdier av $\beta k $ er det dårlig sammsvar mellom mellom d
 Sammenhengen mellom simulert og analytisk data plottet mot $T_p$ er relativt god. For de minste verdiene av $T_p$ ($T_p < \sim 100$)  er den simulerte strømmen mindre enn den analytiske. Utenfor dette intervallet er den simulerte strømmen større enn den analytiske. 
 
 #### f)
-Det er tydelig at den analytiske løsningen bygger på et sett med antagelser. Som nevnt i d) er det liten grad av likhet mellom modellene når den termiske energien dominerer systemet. Dermed kan en anta at den analytiske løsningen bygger på en antagelse om at systemet eksisterer i grensen $k_b T \ll K$. Videre antar den analytiske løsningen kontinuitet, dette ser vi fra formlen hvor det integreres over kontinuerlige sannsynlighetsfordelinger. Differansen som oppstår av dette er liten og kan minkes ved å kjøre simulasjonen med flere partikkler for å gi en "høyere grad kontinuitet". 
+Det er tydelig at den analytiske løsningen bygger på et sett med antagelser. Som nevnt i d) er det liten grad av likhet mellom modellene når den termiske energien dominerer systemet. Dermed kan en anta at den analytiske løsningen bygger på en antagelse om at systemet eksisterer i grensen $k_b T \ll K$.
+
+Videre antar den analytiske løsningen kontinuitet, dette ser vi fra formlen hvor det integreres over kontinuerlige sannsynlighetsfordelinger. Differansen som oppstår av dette er liten og slår dessuten begge veier. Variasjonen kan minkes ved å kjøre simulasjonen med flere partikkler. 
+
+Det er også verdt og merke seg at utrykket for $J_\text{avg}$ er forskjellig for simulert og analytisk modell. Den analytiske modellen regner et skritt til høyre som én potenisalbrønn til høyre, mens simuleringen regner hæyre skritt til å være et bindingspunkt til høyre.
+Ettersom den slakere delen av potensialet er lengre enn den bratte vil simulerte proteiner ta flere steg mot bunnen av brønnen dersom de ender opp på den slake siden enn om de hadde endt opp på den bratte. Dermed blir det målte tallet for strømmen i det simulerte tilfellet større. For at disse skal bli likere kan man vekte leddene som gir positiv og negativ strømning for antall steg vi forventer at en partikkel vil ta i den retningen.
