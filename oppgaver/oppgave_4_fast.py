@@ -2,6 +2,7 @@ import scipy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 from numba import njit
+from tqdm import tqdm
 
 from utilities.probs_fast import p_minus, p_plus
 np.seterr(over='ignore')
@@ -116,8 +117,7 @@ def random_walk_ratchet_potential(particles, N_timesteps, T_p, N_particles, N_po
 class ratchet_interaction_walker():
     def __init__(self, cfg : dict, oppg : str):
         self.oppg = oppg
-        self.cfg = cfg[f'oppg-{self.oppg}']
-        cfg = self.cfg
+        self.cfg = cfg
         k_b = sp.constants.Boltzmann
         self.potentials = [V_1, V_2]
         self.T = cfg['T']
@@ -208,20 +208,19 @@ def rho_iterator(cfg: dict, oppg: str, T_p = 'default'):
 
     rho_current_values = list()
     x_t_values = list()
-    main_cfg = cfg
     cfg = cfg[f'oppg-{oppg}']
 
 
     if not isinstance(T_p, str):
         cfg['T_p'] = int(T_p)
-        cfg['N_c'] = 3E4 // T_p
+        cfg['N_cycles'] = int(3E4 / T_p)
 
     #Finner tilsvarende antall partikler til partikkeltettheter oppgitt i oppgaven
     N_p_min, N_p_max = np.ceil(np.array([cfg['rho_min'],cfg['rho_max']]) * cfg['N_s'] * cfg['N_x'] / cfg['b']).astype(int)
-    for N_p in np.arange(N_p_min, N_p_max + 1):
+    for N_p in (np.arange(N_p_min, N_p_max + 1)):
         cfg['N_p'] = N_p
         rho = N_p * cfg['b'] / (cfg['N_x'] * cfg['N_s'])
-        walker = ratchet_interaction_walker(main_cfg, '4b')
+        walker = ratchet_interaction_walker(cfg, oppg)
         T, x_array = walker.interaction_simulator()
         x_t_values.append([T, x_array])
         rho_current_values.append([rho, walker.cycle_averaged_particle_currents])
@@ -255,11 +254,14 @@ def oppg4b(cfg : dict):
 
 
 def oppg4c(cfg : dict):
-    T_p_vals = np.array([100, 300, 600, 1000])
+    #T_p_vals = np.array([100, 300, 600, 1000])
+    T_p_vals = np.array([100, 1000])
     for T_p in T_p_vals:
         print(f'---------------- T_P = {T_p} ----------------')
         plot_vals = rho_iterator(cfg, '4b', T_p)
         walker, rho_current_values, x_t_values = plot_vals
+        for T, x_array in [x_t_values[5], x_t_values[49]]:
+            plot_particle_movement(walker, cfg, x_array, T, '4b', False)
         rho, avg_current = rho_current_values
         plt.plot(rho, (avg_current), label=f'$T_p = {T_p}$')
         plt.title('Syklus-snittet partikkelstrømning med varierende partikkeltetthet')

@@ -7,7 +7,11 @@ Som plottet viser har alle partiklene to ulike typer bevegelse i potensiallandsk
 Generelt virker det som om økende partikkeltetthet fører til minkende partikkelstrømning. Dette kan delvis forklares ved at ettersom partikler frastøter hverandre i denne simuleringen vil høyere partikkeltetthet bety større sannsynlighet for at en gitt potensialbrønn er inntatt av en partikkel. Dermed vil alle etterfølgende partikler som forsøker å innta brønnen ha et mindre potensialdropp før de stoppes av partikkelen under seg, og dermed ha en netto lavere strømning. Når partikkeltettheten blir høy nok vil i tillegg noen partikler kunne ha høyt nok potensiale i til å hoppe ut av brønnen i sagtannsfasen. Dette vil igjen bety større tilfeldighet i hvilken retning partiklene reiser i som fører til mindre netto strømning i en bestemt retning.
 
 ### 4c) 
-Det logartimiske plottet av strømningene ovenfor viser at høyere antall tidssteg per syklus fører til mindre skalaer på partikkelstrømningen, men at den normaliserte endringen som funksjon av partikkeltettheten forblir den samme. Den fysiske tolkningena av dette er at større antall tidssteg mellom hver skifte av potensiale tilsvarer mindre total energi i systemet. Dermed vil større $T_p$ medføre mindre strømning av partikler. 
+Plottene av partikkelstrømningene ved ulike tidssteg ovenfor viser at strømnigsfunksjonens maksima skjer for mindre og mindre partikkeltetthet med voksende antall tidssteg. Dette kan forklares ved at optimal strømning skjer dersom partikler i diffusjonspotensialet akkurat får fordelt seg jevnt utover området og deretter med en gang utsettes for sagtannspotensialet. All tid etter dette er 
+
+å øke partikkeltettheten i modellen vil føre til økt partikkelstrømning inntil den er mettet, og da vil det å legge til flere bety at den normaliserte partikkelstrømningen blir mindre ettersom man får "overflødige" partikler som kun minker størrelsesordenen.
+
+
 
 #### d)
 
