@@ -1,5 +1,7 @@
 *.pdf
-*.png
 *.jpg
 oppgaver/__pycache__/
 *.pyc
+*.png
+gitignored_arkiv/*
+main.py
