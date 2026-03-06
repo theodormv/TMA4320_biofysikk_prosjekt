@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from utilities.probs import p_minus, p_plus
 
 
-
 alpha = 0.8
 T = 273.15 + 37
 beta = sp.constants.Boltzmann *T
@@ -18,28 +17,13 @@ k = 1000/beta
 T_p = 500
 h = 1
 
-
-
-def V_1(x):
-    #normaliserer x til periodisiteten
-    while x > alpha*N_x:
-        x = x - alpha*N_x
-    while x < -(1-alpha)*N_x:
-        x = x + alpha*N_x
-
-    #delt funskjnons utrykk
-    if(0 < x <= (alpha*N_x)):
-        return k * x / (alpha*N_x)
-    if(-(1-alpha)*N_x < x <= 0):
-        return -k*x/((1-alpha)*N_x)
-    
-def V_1_vectorized(x):
+def V_1_vectorized(x, cfg):
     #normaliserer x til periodisiteten
     V_1 = np.zeros(np.shape(x))
 
     L = -(1-alpha)*N_x
     positions = L + (x-L)%N_x
-    
+
     
     V_1 += (positions > 0) * positions*k / (alpha*N_x)
     V_1 += -1*(positions <= 0)*positions*k/ ((1-alpha)*N_x)
@@ -52,44 +36,7 @@ def V_2(x):
 
 
 
-def random_walk_particle(x : np.array, walker : int, V):
-    uniform = np.random.uniform()
-    step_dir = 0
-    if(uniform > 1 - p_plus(x[walker], beta, k, V)):
-        step_dir = 1
-    if(uniform  < p_minus(x[walker], beta, k, V)):
-        step_dir = -1
-
-    new_ind = walker
-    if (step_dir == 1 and walker == (N_points-1)):
-        new_ind = 0
-    else:
-        new_ind = walker + step_dir
-    
-    return new_ind, step_dir
-
-
-def random_walk_system(positions, occupied, potential):
-    n_plus = 0
-    n_minus = 0
-
-    new_occupied = np.zeros(np.shape(occupied), dtype=np.int16)
-    for index, particles  in enumerate(occupied):
-        for _ in range(int(particles)):
-            new_index, step_direction = random_walk_particle(positions ,index, potential)
-            new_occupied[new_index] += 1
-            if(step_direction == 1):
-                n_plus += 1
-                continue
-            if(step_direction == -1):
-                n_minus += 1
-                continue
-    
-    stream = (n_plus - n_minus)/N_particles
-    
-    return new_occupied, stream
-
-def random_walk_system_vectorized(particles, positions, potential):
+def random_walk_system_vectorized(particles, positions, potential, cfg):
 
     movements = np.random.uniform(size=N_particles)
     particle_probs = np.array((p_minus(positions[particles], beta, potential), p_plus(positions[particles], beta, potential)))
@@ -113,23 +60,7 @@ def random_walk_system_vectorized(particles, positions, potential):
     
 
 
-def random_walk_cycle(positions,occupied):
-    avg_stream = 0
-    for timestep in range(2*T_p):
-        if (timestep == 0 or timestep == T_p):
-            plt.hist(positions, occupied)
-
-        potential = V_2 #antar V1 med mindre vi er i en oddetalls del av syklusen
-        if (timestep >= T_p):
-            potential = V_1
-        occupied, stream = random_walk_system(positions, occupied, potential)
-        avg_stream += stream
-
-    avg_stream /= 2*T_p
-
-    return occupied, avg_stream
-
-def random_walk_cycle_vectorized(positions,particles):
+def random_walk_cycle_vectorized(positions,particles, cfg):
     avg_stream = 0
     
     for timestep in range(2*T_p):
@@ -141,14 +72,24 @@ def random_walk_cycle_vectorized(positions,particles):
 
         
 
-        particles, stream = random_walk_system_vectorized(particles, positions, V)
+        particles, stream = random_walk_system_vectorized(particles, positions, V, cfg)
         avg_stream += stream
 
     avg_stream /= 2*T_p
 
     return particles, avg_stream
 
-def oppgave_3_a(num_cycles = 10):
+
+def analytical_avg_current(a, Tp, cfg):
+
+    multiplier = N_x/2 * np.sqrt(3/Tp)
+    erfc_left = sp.special.erfc(a*multiplier)
+    erfc_right = sp.special.erfc((1-a)*multiplier)
+
+    return N_x/(4*Tp) * (erfc_left - erfc_right)
+
+
+def oppgave_3_a(cfg , num_cycles = 10):
     global N_x
     N_x = 100
     
@@ -171,12 +112,12 @@ def oppgave_3_a(num_cycles = 10):
 
     for cycle in range(num_cycles):
         particles, streams[cycle] = random_walk_cycle_vectorized(positions, particles)
-        plt.hist(particles, bins = 20)
+        #plt.hist(particles, bins = 20)
         print(f"cycle: {cycle}, average stream {streams[cycle]}")
-        plt.show()
+        #plt.show()
    
 
-def oppgave_3_b(num_values = 50):
+def oppgave_3_b(cfg , num_values = 50):
     global N_particles
     N_particles = 4*N_x
 
@@ -191,16 +132,12 @@ def oppgave_3_b(num_values = 50):
 
     global T_p
     Tp_range = np.linspace(1, 1001, num_values, dtype=np.int16)
-    for _ in range(20):
-        i = 0
-        for T in tqdm(Tp_range):
-            T_p = T
-            particles = np.copy(particles_start)
-            _, s = random_walk_cycle_vectorized(positions, particles)
-            streams[i] += s
-            i+=1
-        
-    streams /= 20
+    for T in tqdm(Tp_range):
+        T_p = T
+        particles = np.copy(particles_start)
+        _, streams[i] = random_walk_cycle_vectorized(positions, particles, cfg)
+        i+=1
+
 
 
     plt.plot(Tp_range, streams)
@@ -213,26 +150,9 @@ def oppgave_3_b(num_values = 50):
 
 
 
-def analytical_avg_current_alpha(a):
-
-    multiplier = N_x/2 * np.sqrt(3/T_p)
-    erfc_left = sp.special.erfc(a*multiplier)
-    erfc_right = sp.special.erfc((1-a)*multiplier)
-
-    return N_x/(4*T_p) * (erfc_left - erfc_right)
 
 
-
-def analytical_avg_current_T_p(Tp):
-
-    multiplier = N_x/2 * np.sqrt(3/Tp)
-    erfc_left = sp.special.erfc(alpha*multiplier)
-    erfc_right = sp.special.erfc((1-alpha)*multiplier)
-
-    return N_x/(4*T_p) * (erfc_left - erfc_right)
-
-
-def oppgave_3_c(num_values = 50):
+def oppgave_3_c(cfg , num_values = 50):
     global T_p
     T_p = 500
     global N_particles
@@ -250,10 +170,10 @@ def oppgave_3_c(num_values = 50):
     for a in tqdm(alpha_range):
         alpha = a
         particles = np.copy(particles_start)
-        _, streams[i] = random_walk_cycle_vectorized(positions, particles)
+        _, streams[i] = random_walk_cycle_vectorized(positions, particles, cfg)
         i+=1
 
-    plt.plot(alpha_range, analytical_avg_current_alpha(alpha_range), label=r"Analytical $J_\text{avg}$")
+    plt.plot(alpha_range, analytical_avg_current(alpha_range, cfg.T_p, cfg), label=r"Analytical $J_\text{avg}$")
     plt.plot(alpha_range, streams, label=r"Simulated $J_\text{avg}$")
     plt.legend()
     plt.xlabel(r"$\alpha$")
@@ -263,7 +183,7 @@ def oppgave_3_c(num_values = 50):
     plt.show()
     
 
-def oppgave_3_d(num_values = 50):
+def oppgave_3_d(cfg ,num_values = 50):
     global T_p
     T_p = 500
     global N_particles
@@ -287,7 +207,7 @@ def oppgave_3_d(num_values = 50):
         for i,a in enumerate(alpha_range):
             alpha = a
             particles = np.copy(particles_start)
-            _, streams[i] = random_walk_cycle_vectorized(positions, particles)
+            _, streams[i] = random_walk_cycle_vectorized(positions, particles, cfg)
 
         
         plt.plot(alpha_range, streams, label=r"$\beta k = $" + str(kbeta[j]))
@@ -300,7 +220,7 @@ def oppgave_3_d(num_values = 50):
     plt.show()
     
 
-def oppgave_3_e(num_values = 20):
+def oppgave_3_e(cfg ,num_values = 20):
 
     global N_x
     N_x = 100
@@ -325,12 +245,12 @@ def oppgave_3_e(num_values = 20):
     for i, T in enumerate(tqdm(Tp_range)):
         T_p = T
         particles = np.copy(particles_start)
-        _, streams[i] = random_walk_cycle_vectorized(positions, particles)
+        _, streams[i] = random_walk_cycle_vectorized(positions, particles, cfg)
 
 
 
     plt.plot(Tp_range, streams, label=r"simulatet $J_\text{avg}$") 
-    plt.plot(Tp_range, analytical_avg_current_T_p(Tp_range), label=r"analytical $J_\text{avg}$")
+    plt.plot(Tp_range, analytical_avg_current(cfg.alpha, Tp_range, cfg), label=r"analytical $J_\text{avg}$")
     plt.legend()
     plt.grid()
 
