@@ -192,7 +192,7 @@ def plot_particle_movement(walker : ratchet_interaction_walker, cfg : dict, x_ar
     cfg = cfg[oppg]
     for x in x_array:
 
-        #Fjerner diskontinuiteter fra plottet
+        #Fjerner diskontinuiteter fra plottet [KI generert]
         x_float = x.astype(np.float64)
         diffs = np.abs(np.diff(x_float)) 
         jump_indices = np.where(diffs >= (cfg['N_x']*cfg['N_s'] - 10))[0]
